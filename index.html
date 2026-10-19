@@ -1,10 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minigame Thúy Vân - Prudential</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#fff5f5;color:#333}
+header{background:#b52b32;color:white;text-align:center;padding:30px 15px;border-bottom:5px solid #f5d46b}
+h1{margin:0 0 12px;font-size:30px}
+main{max-width:760px;margin:30px auto;padding:25px;background:white;border-radius:18px;box-shadow:0 5px 20px #ddd}
+button{background:#b52b32;color:white;border:0;border-radius:9px;padding:13px 18px;margin:6px 4px;cursor:pointer;font-size:16px}
+button:hover{background:#8e2027}
+.answer{display:block;width:100%;text-align:left;background:#fff0f0;color:#333;border:1px solid #e5b8b8}
+.answer:hover{background:#ffe0e0}
+#feedback{font-weight:bold;margin:15px 0}
+.small{color:#777;font-size:13px}
+</style>
 </head>
 <body>
-<h1>🌟 MINIGAME THÚY VÂN 🌟</h1>
-<h2>Đào tạo bảo hiểm Prudential</h2>
-<p>Chào mừng anh chị đến với trò chơi ôn tập kiến thức bảo hiểm!</p>
-<button onclick="alert('Chúc anh chị học tập vui vẻ!')">
-BẮT ĐẦU
-</button>
+<header>
+<h1>⭐ MINIGAME THÚY VÂN ⭐</h1>
+<div>Hành trình khám phá Prudential – Học vui, nhớ lâu</div>
+</header>
+<main>
+<div id="intro">
+<h2>Chào mừng anh chị đến với trò chơi ôn tập!</h2>
+<p>10 câu hỏi về lịch sử Prudential và kiến thức bảo hiểm. Mỗi câu đúng được 10 điểm.</p>
+<button onclick="startGame()">BẮT ĐẦU CHƠI</button>
+</div>
+<div id="game" hidden>
+<p id="progress"></p>
+<h2 id="question"></h2>
+<div id="answers"></div>
+<p id="feedback"></p>
+<button id="next" onclick="nextQuestion()" hidden>CÂU TIẾP THEO ➜</button>
+</div>
+<div id="result" hidden>
+<h2>🎉 Hoàn thành trò chơi!</h2>
+<h2 id="score"></h2>
+<p id="message"></p>
+<button onclick="startGame()">CHƠI LẠI</button>
+</div>
+<p class="small">THÚY VÂN ÔN LUYỆN • Tư liệu lịch sử cần đối chiếu với tài liệu chính thức của Prudential trước khi sử dụng trong đào tạo.</p>
+</main>
+<script>
+const questions = [
+{q:"Prudential Việt Nam chính thức hoạt động từ năm nào?",a:["1995","1999","2000","2002"],c:1,e:"Prudential chính thức hoạt động tại Việt Nam từ năm 1999."},
+{q:"Sau khoảng một năm hoạt động, Prudential đã phát hành khoảng bao nhiêu hợp đồng theo tư liệu ôn tập?",a:["10.000","50.000","100.000","1.000.000"],c:2,e:"Đáp án theo bộ tư liệu ôn tập của trò chơi. Vân hãy đối chiếu nguồn chính thức trước khi giảng."},
+{q:"Mốc năm 2002 trong bộ tư liệu ôn tập gắn với thành tựu nào?",a:["Bảo vệ 1 triệu khách hàng","Đứng đầu mọi thị trường","Thành lập tại Việt Nam","Ra mắt ứng dụng điện thoại"],c:0,e:"Đây là mốc trong bộ câu hỏi ôn tập; nên kiểm tra lại tài liệu nguồn chính thức."},
+{q:"Theo bộ tư liệu ôn tập, Prudential được ghi nhận vị trí thương hiệu nổi bật nào vào năm 2006?",a:["Top 1 thương hiệu bảo hiểm – tài chính – ngân hàng","Top 1 hãng hàng không","Top 1 nhà sản xuất ô tô","Top 1 công ty công nghệ"],c:0,e:"Vân nên xác nhận cách ghi nhận và năm của danh hiệu trước khi sử dụng."},
+{q:"Theo bộ câu hỏi ôn tập, tổng quyền lợi bảo hiểm chi trả trong năm 2025 là bao nhiêu?",a:["3,2 nghìn tỷ đồng","7,2 nghìn tỷ đồng","7,4 nghìn tỷ đồng","14,4 nghìn tỷ đồng"],c:2,e:"Số liệu tài chính cần đối chiếu báo cáo hoặc công bố chính thức của Prudential."},
+{q:"Theo bộ câu hỏi ôn tập, tổng quyền lợi bảo hiểm chi trả giai đoạn 2010–2025 là bao nhiêu?",a:["325 tỷ đồng","3,2 nghìn tỷ đồng","7,4 nghìn tỷ đồng","14,4 nghìn tỷ đồng"],c:3,e:"Vân hãy xác nhận số liệu trong báo cáo chính thức trước buổi học."},
+{q:"Theo bộ tư liệu ôn tập, Prudential Việt Nam bắt đầu chi trả khoản thưởng đặc biệt dựa trên kết quả kinh doanh từ năm nào?",a:["2000","2002","2007","2009"],c:1,e:"Đối chiếu quy định và tư liệu sản phẩm/doanh nghiệp trước khi giảng."},
+{q:"Thông điệp thương hiệu được dùng trong bộ câu hỏi này là gì?",a:["Lắng nghe. Thấu hiểu. Hành động.","Nhanh hơn mỗi ngày","Luôn đứng đầu mọi lĩnh vực","Chỉ tập trung đầu tư"],c:0,e:"Hãy kiểm tra thông điệp đang được Prudential Việt Nam sử dụng tại thời điểm đào tạo."},
+{q:"Mục tiêu quan trọng của bảo hiểm nhân thọ là gì?",a:["Cam kết chắc chắn sinh lời cao","Bảo vệ tài chính trước những rủi ro theo hợp đồng","Thay thế hoàn toàn tiền tiết kiệm","Không cần xem điều khoản hợp đồng"],c:1,e:"Bảo hiểm nhân thọ giúp bảo vệ tài chính theo quyền lợi, điều kiện và loại trừ của hợp đồng."},
+{q:"Khi tư vấn bảo hiểm, việc nào cần ưu tiên?",a:["Hứa chắc chắn mọi yêu cầu đều được chi trả","Chỉ nói về điểm có lợi","Tư vấn trung thực, rõ ràng và phù hợp nhu cầu","Khuyên khách hàng ký ngay"],c:2,e:"Tư vấn viên cần cung cấp thông tin trung thực, giải thích rõ điều khoản và giúp khách hàng hiểu trước khi quyết định."}
+];
+let index=0, points=0, answered=false;
+function startGame(){
+index=0;points=0;
+document.getElementById("intro").hidden=true;
+document.getElementById("result").hidden=true;
+document.getElementById("game").hidden=false;
+showQuestion();
+}
+function showQuestion(){
+answered=false;
+document.getElementById("progress").textContent="Câu "+(index+1)+" / "+questions.length+" • Điểm: "+points;
+document.getElementById("question").textContent=questions[index].q;
+document.getElementById("feedback").textContent="";
+document.getElementById("next").hidden=true;
+const box=document.getElementById("answers");box.innerHTML="";
+questions[index].a.forEach((answer,i)=>{
+const b=document.createElement("button");
+b.className="answer";b.textContent=String.fromCharCode(65+i)+". "+answer;
+b.onclick=()=>chooseAnswer(i);box.appendChild(b);
+});
+}
+function chooseAnswer(choice){
+if(answered)return;answered=true;
+const q=questions[index];
+if(choice===q.c){points+=10;document.getElementById("feedback").textContent="✅ Chính xác! +10 điểm. "+q.e;}
+else{document.getElementById("feedback").textContent="❌ Chưa đúng. Đáp án đúng: "+q.a[q.c]+". "+q.e;}
+document.getElementById("progress").textContent="Câu "+(index+1)+" / "+questions.length+" • Điểm: "+points;
+document.getElementById("next").hidden=false;
+document.querySelectorAll(".answer").forEach(b=>b.disabled=true);
+}
+function nextQuestion(){
+index++;
+if(index<questions.length){showQuestion();return;}
+document.getElementById("game").hidden=true;
+document.getElementById("result").hidden=false;
+document.getElementById("score").textContent="Điểm của anh chị: "+points+" / 100";
+document.getElementById("message").textContent=points>=80?"Xuất sắc! Anh chị nắm bài rất tốt.":points>=50?"Rất tốt! Hãy ôn thêm những câu chưa đúng nhé.":"Cảm ơn anh chị! Mình cùng ôn lại kiến thức và thử sức lần nữa nhé.";
+}
+</script>
 </body>
 </html>
